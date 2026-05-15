@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evans Transportation — EDI-204 Tender Carrier Reference</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
+
+  :root {
+    --teal: #0B5362;
+    --green: #00A984;
+    --orange: #FF8200;
+    --gray: #4B4B4B;
+    --light: #f4f7f8;
+    --border: #d0dde0;
+    --white: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--light);
+    color: var(--gray);
+    min-height: 100vh;
+    padding: 40px 32px;
+  }
+
+  header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    border-bottom: 3px solid var(--teal);
+    padding-bottom: 20px;
+  }
+
+  .header-left h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--teal);
+    letter-spacing: -0.3px;
+  }
+
+  .header-left p {
+    font-size: 12px;
+    color: var(--gray);
+    margin-top: 4px;
+    font-weight: 300;
+  }
+
+  .badge-legend {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .badge-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray);
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .dot-edi { background: var(--teal); }
+  .dot-smc { background: var(--green); }
+
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--teal);
+    padding: 12px 20px;
+    border-radius: 4px;
+    min-width: 140px;
+  }
+
+  .stat-card.green { border-left-color: var(--green); }
+  .stat-card.orange { border-left-color: var(--orange); }
+
+  .stat-num {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--teal);
+    font-family: 'IBM Plex Mono', monospace;
+    line-height: 1;
+  }
+
+  .stat-card.green .stat-num { color: var(--green); }
+  .stat-card.orange .stat-num { color: var(--orange); }
+
+  .stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--gray);
+    margin-top: 4px;
+  }
+
+  .search-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    align-items: center;
+  }
+
+  input[type="text"] {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    width: 260px;
+    background: var(--white);
+    color: var(--gray);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input[type="text"]:focus { border-color: var(--teal); }
+
+  select {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    background: var(--white);
+    color: var(--gray);
+    outline: none;
+    cursor: pointer;
+  }
+
+  .table-wrap {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(11,83,98,0.07);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead tr {
+    background: var(--teal);
+    color: var(--white);
+  }
+
+  thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+  }
+
+  thead th:nth-child(2) { width: 90px; }
+  thead th:nth-child(3) { width: 120px; text-align: center; }
+  thead th:nth-child(4) { width: 120px; text-align: center; }
+  thead th:nth-child(5) { width: 160px; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #f0f6f7; }
+  tbody tr.hidden { display: none; }
+
+  td {
+    padding: 10px 16px;
+    vertical-align: middle;
+  }
+
+  .carrier-name {
+    font-weight: 600;
+    color: var(--teal);
+  }
+
+  .scac-code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray);
+    background: var(--light);
+    padding: 2px 6px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+
+  .check {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .pill-edi { background: var(--teal); color: white; }
+  .pill-smc { background: var(--green); color: white; }
+  .pill-empty { background: transparent; }
+
+  .note-tag {
+    font-size: 10px;
+    background: #fff3e0;
+    color: var(--orange);
+    border: 1px solid var(--orange);
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-weight: 600;
+    display: inline-block;
+  }
+
+  .edi-version {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #888;
+  }
+
+  .footer {
+    margin-top: 20px;
+    font-size: 11px;
+    color: #999;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .footer span { font-family: 'IBM Plex Mono', monospace; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>Evans Transportation — EDI-204 Tender Carrier Reference</h1>
+    <p>Project Bypass · RWC Integration Scope · Confidential — Internal Use Only · Generated 2026-05-15</p>
+  </div>
+  <div class="badge-legend">
+    <div class="badge-item"><div class="dot dot-edi"></div> EDI 204 to MG</div>
+    <div class="badge-item"><div class="dot dot-smc"></div> SMC3 XML to MG</div>
+  </div>
+</header>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-num" id="total-count">54</div>
+    <div class="stat-label">Total Carriers</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num" id="edi-count">47</div>
+    <div class="stat-label">EDI 204 Tender</div>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-num" id="smc-count">7</div>
+    <div class="stat-label">SMC3 XML Tender</div>
+  </div>
+</div>
+
+<div class="search-row">
+  <input type="text" id="search" placeholder="Search carrier or SCAC…" oninput="filterTable()">
+  <select id="filter-type" onchange="filterTable()">
+    <option value="all">All Tender Types</option>
+    <option value="edi">EDI 204 Only</option>
+    <option value="smc">SMC3 XML Only</option>
+  </select>
+</div>
+
+<div class="table-wrap">
+  <table id="carrier-table">
+    <thead>
+      <tr>
+        <th>Carrier Name</th>
+        <th>SCAC</th>
+        <th>SMC3 → MG</th>
+        <th>EDI 204 → MG</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- EDI 204 carriers -->
+      <tr data-type="edi"><td class="carrier-name">AAA Cooper Transportation</td><td><span class="scac-code">AACT</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">ABF Freight</td><td><span class="scac-code">ABFS</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Aberdeen Express</td><td><span class="scac-code">ABNE</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">ArcBest</td><td><span class="scac-code">ACBH</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span> <span class="note-tag">UseActualEventDates</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Averitt Express</td><td><span class="scac-code">AVRT</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Axle Logistics</td><td><span class="scac-code">AXLL</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Ship CC</td><td><span class="scac-code">CCYQ</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">C.H. Robinson</td><td><span class="scac-code">CHRW</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Con-Way Freight</td><td><span class="scac-code">CNWY</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">The Custom Companies</td><td><span class="scac-code">CTBV</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Central Transport</td><td><span class="scac-code">CTII</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span> <span class="note-tag">Retender</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">DC Logistics</td><td><span class="scac-code">DCHA</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span> <span class="note-tag">ISA15=T</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Dohrn Transfer</td><td><span class="scac-code">DHRN</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Dependable Highway Express</td><td><span class="scac-code">DPHE</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Double D Express</td><td><span class="scac-code">DBDE</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Daylight Transport</td><td><span class="scac-code">DYLT</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Expedited Freight</td><td><span class="scac-code">EXDF</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Estes Express</td><td><span class="scac-code">EXLA</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span> <span class="note-tag">Cleo</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Frontline Freight</td><td><span class="scac-code">FCSY</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">FFE Truckload</td><td><span class="scac-code">FFTL</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Fort Transportation</td><td><span class="scac-code">FTSC</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span> <span class="note-tag">Public ServiceCodes</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Forward Air (FWDA)</td><td><span class="scac-code">FWDA</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Forward Air (FWRA)</td><td><span class="scac-code">FWRA</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">FedEx Freight East</td><td><span class="scac-code">FXFE</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span> <span class="note-tag">L5FreightClass</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">FedEx National LTL</td><td><span class="scac-code">FXNL</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span> <span class="note-tag">L5FreightClass</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Grafton</td><td><span class="scac-code">GFON</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Heding Truck Service</td><td><span class="scac-code">HEDT</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span> <span class="note-tag">UseActualEventDates</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Hercules Freight</td><td><span class="scac-code">HRCF</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Jeff's Fast Freight</td><td><span class="scac-code">JFFF</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Jung Express</td><td><span class="scac-code">JUNG</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">KEVT1 (Celestica)</td><td><span class="scac-code">KEVT1</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span> <span class="note-tag">Custom Converter</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">KEVT2 (Rock Farm)</td><td><span class="scac-code">KEVT2</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span> <span class="note-tag">Custom TX Class</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Allen Lund Co.</td><td><span class="scac-code">LUAC</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span> <span class="note-tag">UseActualEventDates</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Mainfreight</td><td><span class="scac-code">MFGN</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Magnum LTL</td><td><span class="scac-code">MGUL</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span> <span class="note-tag">AT5ServiceDesc</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Mode B2B</td><td><span class="scac-code">MTLE</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">NM Transfer</td><td><span class="scac-code">NMTF</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span> <span class="note-tag">AT5ServiceDesc</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Old Dominion</td><td><span class="scac-code">ODFL</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Oak Harbor Freight Lines</td><td><span class="scac-code">OAKH</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Peninsula Truck Lines</td><td><span class="scac-code">PENS</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Pitt Ohio</td><td><span class="scac-code">PITD</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">A-Duie Pyle</td><td><span class="scac-code">PYLE</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Quik X Transport</td><td><span class="scac-code">QXTI</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">C.H. Robinson (RBTW)</td><td><span class="scac-code">RBTW</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span> <span class="note-tag">N7FromEquipment</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Rock Transfer</td><td><span class="scac-code">RCKS</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Roadrunner Transportation (RRTS)</td><td><span class="scac-code">RDFS</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span> <span class="note-tag">ReceiverID=RRTS</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">RL Carriers</td><td><span class="scac-code">RLCA</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Ruan Transport</td><td><span class="scac-code">RUAN</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Saia</td><td><span class="scac-code">SAIA</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Southwestern Motor Transport</td><td><span class="scac-code">SMTL</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Standard Forwarding</td><td><span class="scac-code">STDF</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Sutton Transport</td><td><span class="scac-code">SUON</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Tax Air</td><td><span class="scac-code">TAXA</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">UPS Freight (TFIN)</td><td><span class="scac-code">TFIN</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">UPS Ground</td><td><span class="scac-code">UPGF</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">US Special Delivery</td><td><span class="scac-code">UPPN</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Vocar Trucking</td><td><span class="scac-code">VCTS</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span> <span class="note-tag">Custom RefTypes</span></td></tr>
+      <tr data-type="edi"><td class="carrier-name">Ward Trucking</td><td><span class="scac-code">WARD</span></td><td class="check"></td><td class="check"><span class="pill pill-edi">✓</span></td><td><span class="edi-version">4010</span></td></tr>
+      <!-- SMC3 XML carriers -->
+      <tr data-type="smc"><td class="carrier-name">Bestway (BTVP)</td><td><span class="scac-code">BTVP</span></td><td class="check"><span class="pill pill-smc">✓</span></td><td class="check"></td><td><span class="note-tag">SMC3 v3.21</span></td></tr>
+      <tr data-type="smc"><td class="carrier-name">DHL Freight (DAFG)</td><td><span class="scac-code">DAFG</span></td><td class="check"><span class="pill pill-smc">✓</span></td><td class="check"></td><td><span class="note-tag">SMC3 v3.21</span></td></tr>
+      <tr data-type="smc"><td class="carrier-name">MidWest (MIHD)</td><td><span class="scac-code">MIHD</span></td><td class="check"><span class="pill pill-smc">✓</span></td><td class="check"></td><td><span class="note-tag">SMC3 v3.21</span></td></tr>
+      <tr data-type="smc"><td class="carrier-name">Mountaineer (MTJG)</td><td><span class="scac-code">MTJG</span></td><td class="check"><span class="pill pill-smc">✓</span></td><td class="check"></td><td><span class="note-tag">SMC3 v3.21</span></td></tr>
+      <tr data-type="smc"><td class="carrier-name">Norpak (NOPK)</td><td><span class="scac-code">NOPK</span></td><td class="check"><span class="pill pill-smc">✓</span></td><td class="check"></td><td><span class="note-tag">SMC3 v3.21</span></td></tr>
+      <tr data-type="smc"><td class="carrier-name">Pilot Freight (PFEG)</td><td><span class="scac-code">PFEG</span></td><td class="check"><span class="pill pill-smc">✓</span></td><td class="check"></td><td><span class="note-tag">SMC3 v3.21</span></td></tr>
+      <tr data-type="smc"><td class="carrier-name">Southeastern Freight Lines</td><td><span class="scac-code">SEFL</span></td><td class="check"><span class="pill pill-smc">✓</span></td><td class="check"></td><td><span class="note-tag">SMC3 v3.21</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="footer">
+  <span>Evans Transportation Services, Inc. · Project Bypass · RWC Integration Scope</span>
+  <span id="visible-count">Showing all 64 carriers</span>
+</div>
+
+<script>
+function filterTable() {
+  const search = document.getElementById('search').value.toLowerCase();
+  const type = document.getElementById('filter-type').value;
+  const rows = document.querySelectorAll('#carrier-table tbody tr');
+  let visible = 0;
+
+  rows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    const rowType = row.dataset.type;
+    const matchSearch = text.includes(search);
+    const matchType = type === 'all' || rowType === type;
+
+    if (matchSearch && matchType) {
+      row.classList.remove('hidden');
+      visible++;
+    } else {
+      row.classList.add('hidden');
+    }
+  });
+
+  document.getElementById('visible-count').textContent = `Showing ${visible} carrier${visible !== 1 ? 's' : ''}`;
+}
+</script>
+</body>
+</html>
